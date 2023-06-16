@@ -1,0 +1,46 @@
+import sqlite3
+from flask import Flask,request
+
+app = Flask(__name__)
+
+@app.route('/register', methods = ['POST'])
+def register():
+    try:
+        data = request.get_json()
+        connection = sqlite3.connect('ums.db')
+        cursor = connection.cursor()
+        cursor.execute('CREATE TABLE IF NOT EXISTS users (id text , password text)')
+        cursor.execute("INSERT INTO users VALUES ('{}','{}')".format(data['id'],data['password']))
+        connection.commit()
+        return 'Account created successfully...'
+    except:
+        return 'There is some error...'
+
+@app.route('/show')
+def show():
+        connection = sqlite3.connect('ums.db')
+        cursor = connection.cursor()
+        return {'users': list(cursor.execute("SELECT * FROM users"))}
+
+
+@app.route('/update', methods = ['POST'])
+def update():
+        data = request.get_json()
+        connection = sqlite3.connect('ums.db')
+        cursor = connection.cursor()
+        cursor.execute("UPDATE  users  SET password = '{}' WHERE id = '{}'".format(data['password'],data['id']))
+        connection.commit()
+        return 'Account details changed successfully...'
+
+
+@app.route('/delete', methods = ['POST'])
+def delete():
+        data = request.get_json()
+        connection = sqlite3.connect('ums.db')
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM  users  WHERE id = '{}'".format(data['id']))
+        connection.commit()
+        return 'Account deleted successfully...'
+
+
+app.run(port=5000)
